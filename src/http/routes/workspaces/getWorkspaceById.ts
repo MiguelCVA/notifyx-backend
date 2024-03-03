@@ -1,7 +1,7 @@
 import { Elysia } from 'elysia'
-import { db } from '../../../db/prisma'
 import { authentication } from '../../authentication'
 import { WorkspaceNotExistsError } from '../errors/workspace-not-exists'
+import { db } from '@/db/prisma'
 
 export const getWorkspaceByIdFunction = async (
   id: string | undefined,
