@@ -2,7 +2,12 @@ import { Elysia } from 'elysia'
 import cors from '@elysiajs/cors'
 
 import { authentication } from './authentication'
-import { internalRoutes, usersRoutes, workspaceRoutes } from '@routes/index'
+import {
+  internalRoutes,
+  usersRoutes,
+  webhookRoutes,
+  workspaceRoutes,
+} from '@routes/index'
 
 const app = new Elysia()
   .use(
@@ -25,6 +30,7 @@ const app = new Elysia()
   .use(usersRoutes)
   .use(workspaceRoutes)
   .use(internalRoutes)
+  .use(webhookRoutes)
 
 app.listen(3333)
 
