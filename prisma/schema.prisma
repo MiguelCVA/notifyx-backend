@@ -20,9 +20,8 @@ model Notify {
   body        String
   icon        String?
   provider    String
-  channel     String
-  createdById String
-  createdAt   DateTime   @default(now())
+  createdById String?
+  createdAt   DateTime?  @default(now())
   updatedAt   DateTime?
   Workspace   Workspace? @relation(fields: [workspaceId], references: [id])
   workspaceId String?

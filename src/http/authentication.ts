@@ -11,6 +11,7 @@ import {
 const jwtPayloadSchema = t.Object({
   sub: t.String(),
   uid: t.Optional(t.String()),
+  wid: t.String(),
 })
 export type JwtPayload = Static<typeof jwtPayloadSchema>
 
