@@ -20,9 +20,9 @@ type ICreateUser = {
 
 type IWorkspace = {
   id: string | undefined
-  name: string | undefined
-  slug: string | undefined
-  userId: string | undefined
+  name?: string | undefined
+  slug?: string | undefined
+  userId?: string | undefined
 }
 
 type ICreateWorkspace = {
@@ -68,7 +68,6 @@ export class Andromeda {
     },
   }
 
-  // Generate workspace schema
   workspace = {
     async findUnique({ ...p }: IWorkspace) {
       const prismaWorkspace = await db.workspace.findUnique({
@@ -78,8 +77,12 @@ export class Andromeda {
         prismaWorkspace,
       }
     },
-    async findMany() {
-      return db.workspace.findMany()
+    async findMany(userId?: string) {
+      return db.workspace.findMany({
+        where: {
+          userId,
+        },
+      })
     },
     async create(data: ICreateWorkspace) {
       return db.workspace.create({
