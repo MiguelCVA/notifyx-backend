@@ -30,13 +30,25 @@ model Notify {
   @@index([name], name: "name_idx")
 }
 
+// Quero qeu o Webhook tenha um relacionamento com varios workspaces
+
 model Workspace {
-  id        String   @id @default(uuid())
+  id        String    @id @default(uuid())
   name      String
   slug      String
-  notifyers Notify[]
-  User      User?    @relation(fields: [userId], references: [id])
+  User      User?     @relation(fields: [userId], references: [id])
   userId    String?
+  notifyers Notify[]
+  webhooks  Webhook[]
+}
+
+model Webhook {
+  id         String      @id @default(uuid())
+  name       String
+  url        String
+  workspaces Workspace[]
+  User       User?       @relation(fields: [userId], references: [id])
+  userId     String?
 }
 
 model User {
@@ -49,6 +61,7 @@ model User {
   accounts      Account[]
   Session       Session[]
   workspaces    Workspace[]
+  webhooks      Webhook[]
 }
 
 model Account {
