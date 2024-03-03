@@ -1,14 +1,17 @@
 import { Elysia } from 'elysia'
 
 import { authentication } from '../../authentication'
-import { UserNotFound } from '../errors/user-not-found-error'
 import { getAllWorkspacesFunction } from '../workspaces/getAllWorkspaces'
 import { UnauthorizedError } from '../errors/unauthorized-error'
-import { adb } from '@/db/andromeda'
+import { UserNotFound } from '../errors'
+import { db } from '@/db/prisma'
+import { getAllWebhooksFunction } from '../webhooks/getAllWebhooks'
 
 export const getUserInfoFunction = async (id: string | undefined) => {
   try {
-    const User = await adb.user.findUnique({ id })
+    const User = await db.user.findUnique({
+      where: { id },
+    })
 
     if (!User) throw new Error()
     return User
@@ -21,16 +24,17 @@ export const getUserInfo = new Elysia()
   .use(authentication)
   .get('/me', async ({ getAuthorization }) => {
     try {
-      const user = await getAuthorization()
+      const authorization = await getAuthorization()
 
-      const User = await getUserInfoFunction(user.uid)
-
-      const workspaces = await getAllWorkspacesFunction(user.uid)
+      const user = await getUserInfoFunction(authorization.uid)
+      const workspaces = await getAllWorkspacesFunction(authorization.uid)
+      const webhooks = await getAllWebhooksFunction(authorization.uid)
 
       return Response.json(
         {
-          user: User,
+          user,
           workspaces,
+          webhooks,
         },
         { status: 200 },
       )

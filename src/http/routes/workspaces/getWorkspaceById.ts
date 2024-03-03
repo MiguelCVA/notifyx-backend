@@ -15,9 +15,29 @@ export const getWorkspaceByIdFunction = async (
       },
     })
 
+    const notifications = await db.notify.findMany({
+      where: {
+        workspaceId: id,
+      },
+    })
+
+    const webhooks = await db.webhook.findMany({
+      where: {
+        workspaces: {
+          some: {
+            id,
+          },
+        },
+      },
+    })
+
     if (!workspace) throw new Error()
 
-    return workspace
+    return {
+      workspace,
+      notifications,
+      webhooks,
+    }
   } catch (error) {
     throw new WorkspaceNotExistsError()
   }

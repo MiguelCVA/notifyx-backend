@@ -1,13 +1,21 @@
 import { Elysia } from 'elysia'
-// import { db } from '../../../db/prisma'
+import { db } from '../../../db/prisma'
 import { authentication } from '../../authentication'
 import { UnauthorizedError } from '../errors/unauthorized-error'
 import { WorkspaceNotExistsError } from '../errors/workspace-not-exists'
-import { adb } from '@/db/andromeda'
 
 export const getAllWorkspacesFunction = async (userId: string | undefined) => {
   try {
-    const workspace = await adb.workspace.findMany(userId)
+    const workspace = await db.workspace.findMany({
+      where: {
+        userId,
+      },
+      select: {
+        id: true,
+        name: true,
+        slug: true,
+      },
+    })
 
     if (!workspace) throw new Error()
 
