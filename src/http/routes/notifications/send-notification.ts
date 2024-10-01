@@ -5,7 +5,7 @@ import { InternalApplicationError } from '../errors'
 
 import { Notify } from '@prisma/client'
 
-export const sendNotificationToWebhooks = async (
+export const sendNotificationToWebhooksInBackground = async (
   workspaceId: string,
   notification: Notify,
 ) => {
@@ -20,26 +20,31 @@ export const sendNotificationToWebhooks = async (
   })
 
   if (webhooks) {
-    for (const webhook of webhooks) {
-      await fetch(webhook.url, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          id: notification.id,
-          name: notification.name,
-          description: notification.description,
-          body: notification.body,
-          icon: notification.icon,
-          provider: notification.provider,
-          workspace: notification.workspaceId,
-          createdAt: notification.createdAt,
-        }),
-      })
-    }
+    webhooks.forEach(async (webhook) => {
+      try {
+        await fetch(webhook.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            id: notification.id,
+            name: notification.name,
+            description: notification.description,
+            body: notification.body,
+            icon: notification.icon,
+            provider: notification.provider,
+            workspace: notification.workspaceId,
+            createdAt: notification.createdAt,
+          }),
+        })
+      } catch (error) {
+        console.error(`Failed to send webhook to ${webhook.url}:`, error)
+      }
+    })
   }
 }
+
 export const SendNotificationFunction = async ({
   name,
   description,
@@ -56,8 +61,7 @@ export const SendNotificationFunction = async ({
   workspaceId: string
 }) => {
   try {
-    if (!name || !description || !body || !provider || !workspaceId)
-      throw new Error()
+    if (!name || !body || !provider || !workspaceId) throw new Error()
     const newNotification = await db.notify.create({
       data: {
         name,
@@ -70,7 +74,7 @@ export const SendNotificationFunction = async ({
     })
 
     if (newNotification) {
-      await sendNotificationToWebhooks(workspaceId, newNotification)
+      sendNotificationToWebhooksInBackground(workspaceId, newNotification)
     }
 
     return newNotification
@@ -96,7 +100,10 @@ export const sendNotification = new Elysia()
         workspaceId: user.wid,
       })
 
-      return Response.json(newNotify, { status: 201 })
+      return Response.json(
+        { status: 'Em envio', notification: newNotify },
+        { status: 201 },
+      )
     } catch (error) {
       throw new InternalApplicationError()
     }
